@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scroll Animated Hero</title>
+    
+    <script src="https://unpkg.com/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script src="https://unpkg.com/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+    <style>
+        :root {
+            --bg: #0b1120;
+            --floor: #1e293b;
+            --grid: rgba(148, 163, 184, 0.08);
+            --desk: #334155;
+            --chair: #0f172a;
+            --character: #38bdf8;
+            --glow: rgba(56, 189, 248, 0.25);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--bg); overflow-x: hidden; font-family: system-ui, sans-serif; color: white; }
+
+        .dummy { height: 100vh; display: flex; align-items: center; justify-content: center; opacity: 0.5; }
+
+        #hero-pin {
+            position: relative; width: 100vw; height: 100vh;
+            background: radial-gradient(circle at 30% 60%, rgba(30,41,59,0.5) 0%, var(--bg) 70%);
+            perspective: 1200px; overflow: hidden; display: flex; align-items: center;
+        }
+
+        .perspective-env {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 60vh;
+            perspective-origin: center bottom; transform-style: preserve-3d; pointer-events: none;
+        }
+
+        .floor {
+            position: absolute; bottom: -30vh; left: -20vw; width: 140vw; height: 100vh;
+            background: linear-gradient(var(--bg) 0%, transparent 40%),
+                        repeating-linear-gradient(0deg, transparent, transparent 40px, var(--grid) 40px, var(--grid) 41px),
+                        repeating-linear-gradient(90deg, transparent, transparent 40px, var(--grid) 40px, var(--grid) 41px);
+            transform: rotateX(75deg); transform-origin: bottom center;
+        }
+
+        .station {
+            position: absolute; left: 25vw; bottom: 18vh; width: 320px; height: 250px;
+            transform-style: preserve-3d; z-index: 10;
+        }
+
+        .desk { position: absolute; bottom: 0; left: 0; width: 280px; height: 160px; }
+        .desk-top { position: absolute; bottom: 120px; left: -20px; width: 300px; height: 20px; background: #475569; border-bottom: 5px solid #1e2533; border-right: 15px solid #3b4b60; border-radius: 4px; }
+        .desk-leg { position: absolute; bottom: 0; width: 16px; height: 120px; background: #1e2533; border-right: 5px solid rgba(255,255,255,0.05); }
+        .desk-leg.l { left: 0px; }
+        .desk-leg.r { right: 40px; }
+        
+        .monitor { position: absolute; bottom: 140px; left: 50px; width: 200px; height: 120px; background: #020617; border: 8px solid var(--floor); border-radius: 8px; box-shadow: 10px 10px 40px var(--glow); transform: perspective(400px) rotateY(15deg); }
+        .monitor::after { content: "IDE_"; position: absolute; top: 15px; left: 15px; color: var(--character); font-family: monospace; font-size: 1.2rem; animation: blink 1s step-end infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        .chair { position: absolute; bottom: 0; left: -70px; width: 140px; height: 160px; z-index: 25; }
+        .chair-base { position: absolute; bottom: 0; left: 55px; width: 15px; height: 50px; background: #64748b; }
+        .chair-seat { position: absolute; bottom: 50px; left: 10px; width: 90px; height: 18px; background: var(--chair); border-radius: 10px; box-shadow: inset 0 -4px 0px rgba(0,0,0,0.5); }
+        .chair-back { position: absolute; bottom: 60px; left: -10px; width: 25px; height: 110px; background: #1e2533; border-radius: 20px; transform: perspective(200px) rotateY(-20deg); }
+
+        #char {
+            position: absolute; bottom: 15vh; left: 100vw; width: 250px; height: 350px;
+            z-index: 20; transform-origin: center bottom; will-change: transform;
+        }
+
+        .state { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; visibility: hidden; opacity: 0; }
+        
+        svg { width: 100%; height: 100%; display: block; fill: none; stroke: var(--character); stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+        ellipse { fill: rgba(0,0,0,0.5); stroke: none; }
+        circle { fill: var(--character); stroke: none; }
+
+        .leg-l { transform-origin: 105px 245px; animation: wlk 1s infinite alternate-reverse linear; }
+        .leg-r { transform-origin: 105px 245px; animation: wlk 1s infinite alternate linear; }
+        .arm { transform-origin: 105px 165px; animation: wlk 1s infinite alternate-reverse linear; }
+        @keyframes wlk { from { transform: rotate(-30deg); } to { transform: rotate(30deg); } }
+        .bounce { animation: bnc 0.5s infinite alternate ease-in-out; transform-origin: center bottom; }
+        @keyframes bnc { to { transform: translateY(-8px); } }
+
+    </style>
+</head>
+<body>
+
+    <section class="dummy">Scroll Down</section>
+
+    <section id="hero-pin">
+        <div class="perspective-env">
+            <div class="floor"></div>
+            
+            <div class="station">
+                <div class="chair">
+                    <div class="chair-base"></div>
+                    <div class="chair-back"></div>
+                    <div class="chair-seat"></div>
+                </div>
+
+                <div class="desk">
+                    <div class="desk-leg l"></div>
+                    <div class="desk-leg r"></div>
+                    <div class="desk-top"></div>
+                    <div class="monitor"></div>
+                </div>
+
+                <div id="char">
+                    <div class="state" id="state-walk">
+                        <svg viewBox="0 0 250 350">
+                            <ellipse cx="125" cy="335" rx="20" ry="4" />
+                            <g class="bounce">
+                                <circle cx="105" cy="115" r="30" />
+                                <path d="M 105,165 L 145,215" stroke-dasharray="2, 6"/>
+                                <path class="leg-r" d="M 105,245 L 95,295 L 75,325"/>
+                                <path d="M 105,145 L 105,245"/>
+                                <path class="leg-l" d="M 105,245 L 125,285 L 145,325" stroke="#2563eb" />
+                                <path class="arm" d="M 105,165 L 75,215" stroke="#2563eb"/>
+                            </g>
+                        </svg>
+                    </div>
+
+                    <div class="state" id="state-turn">
+                        <svg viewBox="0 0 250 350">
+                            <ellipse cx="105" cy="335" rx="30" ry="5" />
+                            <g>
+                                <circle cx="105" cy="115" r="30" />
+                                <path d="M 105,145 L 105,245" />
+                                <path d="M 105,245 L 85,325" />
+                                <path d="M 105,245 L 125,325" />
+                                <path d="M 105,165 L 70,185" stroke="#2563eb"/>
+                                <path d="M 105,165 L 140,185" stroke-dasharray="2, 6"/>
+                            </g>
+                        </svg>
+                    </div>
+
+                    <div class="state" id="state-sit">
+                        <svg viewBox="0 0 250 350">
+                            <ellipse cx="85" cy="335" rx="15" ry="4" />
+                            <g transform="translate(-20, 0)">
+                                <circle cx="105" cy="115" r="30" />
+                                <path d="M 105,145 L 90,245"/> 
+                                <path d="M 90,245 L 45,245" />
+                                <path d="M 45,245 L 45,325" />
+                                <path d="M 90,245 L 55,255" stroke="#2563eb" />
+                                <path d="M 55,255 L 55,330" stroke="#2563eb" />
+                                <path d="M 105,165 L 45,190" stroke="#2563eb" />
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="dummy">Scroll Up</section>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        const states = [
+            document.getElementById('state-walk'),
+            document.getElementById('state-turn'),
+            document.getElementById('state-sit')
+        ];
+
+        gsap.set(states[0], { autoAlpha: 1 });
+
+        const tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: "#hero-pin",
+                start: "top top",
+                end: "+=200vh",
+                pin: true,
+                scrub: true,
+                fastScrollEnd: true
+            }
+        });
+
+        tl.to('#char', { 
+            x: '-70px', 
+            ease: "none", 
+            duration: 60 
+        }, 0)
+        
+        .set(states[0], { autoAlpha: 0 }, 60)
+        .set(states[1], { autoAlpha: 1 }, 60)
+        
+        .to('#char', { 
+            x: '-70px', 
+            ease: "none", 
+            duration: 20 
+        }, 60)
+        
+        .set(states[1], { autoAlpha: 0 }, 80)
+        .set(states[2], { autoAlpha: 1 }, 80)
+        
+        .to('#char', { 
+            y: 40, 
+            ease: "power2.out", 
+            duration: 20 
+        }, 80);
+    </script>
+</body>
+</html>
