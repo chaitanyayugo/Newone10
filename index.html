@@ -3,95 +3,398 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hero Scroll</title>
+    <title>Scroll Hero Sequence</title>
     
     <script src="https://unpkg.com/gsap@3.12.5/dist/gsap.min.js"></script>
     <script src="https://unpkg.com/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
 
     <style>
         :root {
-            --bg-color: #0b1120;
-            --floor-color: #1e293b;
-            --grid-line: rgba(148, 163, 184, 0.1);
-            --desk: #334155;
-            --monitor-bg: #000;
-            --monitor-glow: #38bdf8;
-            --char-primary: #38bdf8;
-            --char-secondary: #2563eb;
+            --bg: #0f172a;
+            --floor: #1e293b;
+            --grid: #334155;
+            --dk: #1e2533;
+            --lt: #475569;
+            --ac: #38bdf8;
+            --ch: #64748b;
+            --sk: #fbbf24;
+            --pt: #cbd5e1;
+            --dpt: #94a3b8;
         }
 
         body, html {
             margin: 0;
             padding: 0;
-            background: var(--bg-color);
-            color: #fff;
-            overflow-x: hidden;
+            background: var(--bg);
+            color: white;
             font-family: system-ui, sans-serif;
+            overflow-x: hidden;
         }
 
-        .scroll-buffer {
+        .scroll-space {
             height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #020617;
             font-size: 1.5rem;
-            letter-spacing: 0.2rem;
-            text-transform: uppercase;
-            opacity: 0.4;
+            color: var(--dpt);
+            border-top: 1px dashed var(--grid);
+            border-bottom: 1px dashed var(--grid);
+            box-sizing: border-box;
+            background: linear-gradient(180deg, var(--bg) 0%, rgba(30, 41, 59, 0.5) 100%);
         }
 
-        #hero-scene {
+        #hero-pin {
+            width: 100vw;
+            height: 100vh;
             position: relative;
-            width: 100vw;
-            height: 100vh;
+            background: var(--bg);
             overflow: hidden;
-            background: radial-gradient(circle at center, rgba(30,41,59,0.8) 0%, var(--bg-color) 80%);
-            perspective: 1400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1000px;
         }
 
-        .perspective-anchor {
+        .environment {
             position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            transform-style: preserve-3d;
-            perspective-origin: 50% 100%;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
         }
 
         .floor {
             position: absolute;
-            bottom: -50vh;
-            left: -50vw;
-            width: 200vw;
-            height: 120vh;
+            bottom: -30vh;
+            left: -20vw;
+            width: 140vw;
+            height: 100vh;
             background: 
-                linear-gradient(var(--bg-color) 0%, transparent 50%),
-                repeating-linear-gradient(0deg, transparent, transparent 60px, var(--grid-line) 60px, var(--grid-line) 62px),
-                repeating-linear-gradient(90deg, transparent, transparent 60px, var(--grid-line) 60px, var(--grid-line) 62px);
-            transform: rotateX(75deg);
+                linear-gradient(to top, var(--floor) 0%, transparent 60%),
+                repeating-linear-gradient(0deg, transparent, transparent 50px, var(--grid) 50px, var(--grid) 52px),
+                repeating-linear-gradient(90deg, transparent, transparent 50px, var(--grid) 50px, var(--grid) 52px);
+            transform: rotateX(70deg);
             transform-origin: bottom center;
         }
 
-        .stage-wrapper {
+        .station {
             position: absolute;
-            bottom: 15vh;
-            left: 45vw;
-            width: 10px;
-            height: 10px;
-            transform-style: preserve-3d;
+            bottom: 25vh;
+            left: 50vw;
+            width: 350px;
+            height: 250px;
+            transform: translateX(-150px);
+            z-index: 30;
         }
 
-        .desk {
+        .d-base {
             position: absolute;
             bottom: 0;
-            left: -40px;
+            left: 50px;
+            width: 250px;
+            height: 15px;
+            background: var(--dk);
+            box-shadow: 0px 30px 40px rgba(0,0,0,0.8);
+            border-radius: 0 5px 10px 0;
+            z-index: 40;
+        }
+        
+        .d-leg {
+            position: absolute;
+            bottom: 0;
+            left: 280px;
+            width: 15px;
+            height: 130px;
+            background: var(--dk);
+            z-index: 40;
+        }
+        
+        .d-top {
+            position: absolute;
+            bottom: 130px;
+            left: 30px;
             width: 320px;
-            height: 180px;
+            height: 15px;
+            background: var(--lt);
+            border-bottom: 4px solid var(--dk);
+            border-radius: 4px;
+            z-index: 40;
         }
 
-        .desk-top {
+        .m-stand {
+            position: absolute;
+            bottom: 145px;
+            left: 100px;
+            width: 30px;
+            height: 20px;
+            background: var(--dk);
+            z-index: 41;
+        }
+
+        .m-disp {
+            position: absolute;
+            bottom: 165px;
+            left: 60px;
+            width: 150px;
+            height: 95px;
+            background: #020617;
+            border: 6px solid var(--grid);
+            border-radius: 5px;
+            z-index: 41;
+            transform: perspective(400px) rotateY(15deg);
+            box-shadow: -5px 10px 20px rgba(56, 189, 248, 0.2);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .code {
+            width: 80%;
+            height: 60%;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .code span {
+            display: block;
+            height: 3px;
+            background: var(--ac);
+            border-radius: 2px;
+            box-shadow: 0 0 5px var(--ac);
+        }
+
+        .c-bg {
+            position: absolute;
+            bottom: 0px;
+            left: -20px;
+            width: 90px;
+            height: 180px;
+            z-index: 10;
+        }
+        
+        .c-seat {
+            position: absolute;
+            bottom: 70px;
+            left: 0;
+            width: 100%;
+            height: 20px;
+            background: var(--ch);
+            border-radius: 10px;
+            box-shadow: inset 0 -4px rgba(0,0,0,0.3);
+        }
+        
+        .c-pole {
+            position: absolute;
+            bottom: 0;
+            left: 40px;
+            width: 15px;
+            height: 70px;
+            background: var(--lt);
+        }
+        
+        .c-feet {
+            position: absolute;
+            bottom: 0;
+            left: 25px;
+            width: 45px;
+            height: 15px;
+            background: var(--ch);
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .c-rest {
+            position: absolute;
+            bottom: 90px;
+            left: 5px;
+            width: 25px;
+            height: 100px;
+            background: var(--dk);
+            border-radius: 12px;
+            transform: rotate(-10deg);
+        }
+
+        #actor {
+            position: absolute;
+            bottom: 25vh;
+            right: -250px;
+            width: 250px;
+            height: 350px;
+            z-index: 20;
+            will-change: transform, right;
+            pointer-events: none;
+        }
+
+        .state-img {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            visibility: hidden;
+            opacity: 0;
+        }
+
+        svg {
+            display: block;
+            width: 100%;
+            height: 100%;
+            fill: none;
+            stroke-width: 10;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .h-f { stroke: var(--sk); fill: var(--sk); }
+        .b-f { stroke: var(--ac); fill: var(--ac); }
+        .p-f { stroke: var(--pt); }
+        .p-b { stroke: var(--dpt); }
+        
+        .arm-l { transform-origin: 100px 175px; animation: arm-sw-l 1s infinite alternate ease-in-out; }
+        .leg-l { transform-origin: 100px 175px; animation: leg-sw-l 1s infinite alternate ease-in-out; }
+        .arm-r { transform-origin: 100px 175px; animation: arm-sw-r 1s infinite alternate ease-in-out; }
+        .leg-r { transform-origin: 100px 175px; animation: leg-sw-r 1s infinite alternate ease-in-out; }
+        .bounce { transform-origin: center bottom; animation: b-bounce 0.5s infinite alternate linear; }
+        
+        @keyframes arm-sw-l { from { transform: rotate(35deg); } to { transform: rotate(-35deg); } }
+        @keyframes leg-sw-l { from { transform: rotate(35deg); } to { transform: rotate(-35deg); } }
+        @keyframes arm-sw-r { from { transform: rotate(-35deg); } to { transform: rotate(35deg); } }
+        @keyframes leg-sw-r { from { transform: rotate(-35deg); } to { transform: rotate(35deg); } }
+        @keyframes b-bounce { 0% { transform: translateY(0px); } 100% { transform: translateY(-10px); } }
+
+    </style>
+</head>
+<body>
+
+    <section class="scroll-space">Scroll To Begin</section>
+
+    <section id="hero-pin">
+        <div class="environment">
+            <div class="floor"></div>
+        </div>
+
+        <div class="station">
+            <div class="c-bg">
+                <div class="c-pole"></div>
+                <div class="c-feet"></div>
+                <div class="c-rest"></div>
+                <div class="c-seat"></div>
+            </div>
+            
+            <div class="d-base"></div>
+            <div class="d-leg"></div>
+            <div class="d-top"></div>
+            
+            <div class="m-stand"></div>
+            <div class="m-disp">
+                <div class="code">
+                    <span style="width: 30%"></span>
+                    <span style="width: 80%"></span>
+                    <span style="width: 60%"></span>
+                    <span style="width: 90%; margin-top:10px;"></span>
+                </div>
+            </div>
+        </div>
+
+        <div id="actor">
+            <div id="s-1" class="state-img">
+                <svg viewBox="0 0 250 350">
+                    <g class="bounce">
+                        <circle cx="100" cy="50" r="30" class="h-f" />
+                        <path class="arm-l p-b" d="M 100,80 L 140,160"/>
+                        <path class="leg-l p-b" d="M 100,175 L 85,250 L 50,300"/>
+                        <path d="M 100,80 L 100,180" class="b-f"/>
+                        <path class="leg-r p-f" d="M 100,175 L 115,260 L 130,310"/>
+                        <path class="arm-r b-f" d="M 100,80 L 60,150 L 50,190"/>
+                    </g>
+                </svg>
+            </div>
+
+            <div id="s-2" class="state-img">
+                <svg viewBox="0 0 250 350">
+                    <g>
+                        <circle cx="100" cy="50" r="30" class="h-f" />
+                        <path class="p-b" d="M 100,180 L 130,310"/>
+                        <path class="p-b" d="M 100,90 L 140,180"/>
+                        <path class="b-f" d="M 100,80 L 100,180"/>
+                        <path class="p-f" d="M 100,180 L 70,310"/>
+                        <path class="b-f" d="M 100,90 L 40,150 L 95,190"/>
+                    </g>
+                </svg>
+            </div>
+
+            <div id="s-3" class="state-img">
+                <svg viewBox="0 0 250 350">
+                    <g transform="translate(10, 0)">
+                        <circle cx="110" cy="45" r="28" class="h-f" />
+                        <path d="M 110,75 L 100,180" class="b-f" />
+                        <path class="p-b" d="M 65,180 L 65,270"/>
+                        <path d="M 100,180 L 55,180" class="p-f" />
+                        <path d="M 55,180 L 55,270" class="p-f" />
+                        <path class="b-f" d="M 110,100 L 50,115"/>
+                        <path class="b-f" d="M 50,115 L 145,110"/>
+                    </g>
+                </svg>
+            </div>
+        </div>
+    </section>
+
+    <section class="scroll-space">Content Below Sequence</section>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        const s1 = document.getElementById('s-1');
+        const s2 = document.getElementById('s-2');
+        const s3 = document.getElementById('s-3');
+
+        gsap.set(s1, { autoAlpha: 1 });
+        
+        const calcRightOffset = () => (window.innerWidth / 2) + 65;
+
+        const tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: "#hero-pin",
+                start: "top top",
+                end: "+=350%",
+                pin: true,
+                scrub: 1
+            }
+        });
+
+        tl.to('#actor', { 
+            right: calcRightOffset,
+            duration: 60, 
+            ease: "none"
+        }, 0)
+        
+        .set(s1, { autoAlpha: 0 }, 60)
+        .set(s2, { autoAlpha: 1 }, 60)
+        
+        .to('#actor', { 
+            duration: 20, 
+            ease: "none" 
+        }, 60)
+        
+        .set(s2, { autoAlpha: 0 }, 80)
+        .set(s3, { autoAlpha: 1 }, 80)
+        
+        .to('#actor', { 
+            y: 40,
+            x: -25,
+            duration: 20, 
+            ease: "power1.inOut" 
+        }, 80);
+
+        window.addEventListener('resize', () => {
+            if (tl.progress() > 0.6) {
+                gsap.set('#actor', { right: calcRightOffset() });
+            }
+        });
+    </script>
+</body>
+                            </html>        .desk-top {
             position: absolute;
             top: 0;
             left: 0;
